@@ -107,14 +107,14 @@ export const quizApi = {
   },
 
   getById: async (id: string) => {
-    const response = await fetch(`${API_BASE}/quiz/${id}`, {
+    const response = await fetch(`${API_BASE}/quiz/edit/${id}`, {
       headers: getAuthHeader()
     })
     return handleResponse(response)
   },
 
   update: async (id: string, data: { title: string; questions: any[] }) => {
-    const response = await fetch(`${API_BASE}/quiz/${id}`, {
+    const response = await fetch(`${API_BASE}/quiz/edit/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
