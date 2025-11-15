@@ -13,14 +13,14 @@ export default function LoginPage() {
     password: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const success = login(formData.email, formData.password)
+    const success = await login(formData.email, formData.password)
     if (success) {
       // Will redirect based on role after state updates
       setTimeout(() => {
-        const currentUser = JSON.parse(sessionStorage.getItem('vtest_current') || '{}')
+        const currentUser = JSON.parse(localStorage.getItem('vtest_current') || '{}')
         if (currentUser.role === 'teacher') {
           router.push('/teacher/dashboard')
         } else {

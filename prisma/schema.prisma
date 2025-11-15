@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   // 'teacher' or 'student'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  quizzes   Quiz[]   @relation("TeacherQuizzes")
+  results   Result[]
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  title       String
+  code        String     @unique
+  teacherId   String
+  teacher     User       @relation("TeacherQuizzes", fields: [teacherId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  results     Result[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text      String
+  option1   String   // Option A
+  option2   String   // Option B
+  option3   String   // Option C
+  option4   String   // Option D
+  correct   Int      // Index of correct answer (0-3)
+  createdAt DateTime @default(now())
+}
+
+model Result {
+  id         String   @id @default(cuid())
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score      Int
+  totalQuestions Int
+  answers    Json     // Store answers as JSON
+  createdAt  DateTime @default(now())
+  
+  @@unique([quizId, studentId])
+}

@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import JoinQuizBanner from '@/components/JoinQuizBanner'
 import HeroBanner from '@/components/HeroBanner'

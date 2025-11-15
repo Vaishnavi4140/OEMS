@@ -1,29 +1,32 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { authApi, ApiError } from './api'
 
 export interface User {
-  id: number
-  name: string
+  id: string
+  name: string | null
   email: string
   role: 'teacher' | 'student'
 }
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => boolean
-  signup: (name: string, email: string, password: string, role: 'teacher' | 'student') => boolean
+  login: (email: string, password: string) => Promise<boolean>
+  signup: (name: string, email: string, password: string, role: 'teacher' | 'student') => Promise<boolean>
   logout: () => void
+  loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load user from sessionStorage on mount
-    const stored = sessionStorage.getItem('vtest_current')
+    // Load user from localStorage on mount
+    const stored = localStorage.getItem('vtest_current')
     if (stored) {
       try {
         setUser(JSON.parse(stored))
@@ -31,57 +34,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Failed to parse user', e)
       }
     }
+    setLoading(false)
   }, [])
 
-  const signup = (name: string, email: string, password: string, role: 'teacher' | 'student'): boolean => {
-    const users = JSON.parse(localStorage.getItem('vtest_users') || '[]')
-    
-    if (users.find((u: any) => u.email === email.toLowerCase())) {
-      alert('Email already exists')
+  const signup = async (name: string, email: string, password: string, role: 'teacher' | 'student'): Promise<boolean> => {
+    try {
+      await authApi.signup(name, email, password, role)
+      return true
+    } catch (error) {
+      if (error instanceof ApiError) {
+        alert(error.message)
+      } else {
+        alert('Signup failed. Please try again.')
+      }
       return false
     }
-
-    const newUser = {
-      id: Date.now(),
-      name,
-      email: email.toLowerCase(),
-      password,
-      role
-    }
-
-    users.push(newUser)
-    localStorage.setItem('vtest_users', JSON.stringify(users))
-    return true
   }
 
-  const login = (email: string, password: string): boolean => {
-    const users = JSON.parse(localStorage.getItem('vtest_users') || '[]')
-    const foundUser = users.find((u: any) => u.email === email.toLowerCase() && u.password === password)
-
-    if (!foundUser) {
-      alert('Invalid credentials')
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await authApi.login(email, password)
+      setUser(response.user)
+      return true
+    } catch (error) {
+      if (error instanceof ApiError) {
+        alert(error.message)
+      } else {
+        alert('Login failed. Please try again.')
+      }
       return false
     }
-
-    const userSession: User = {
-      id: foundUser.id,
-      name: foundUser.name,
-      email: foundUser.email,
-      role: foundUser.role
-    }
-
-    setUser(userSession)
-    sessionStorage.setItem('vtest_current', JSON.stringify(userSession))
-    return true
   }
 
   const logout = () => {
+    authApi.logout()
     setUser(null)
-    sessionStorage.removeItem('vtest_current')
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

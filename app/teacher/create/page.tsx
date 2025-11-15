@@ -45,7 +45,7 @@ export default function CreateQuizPage() {
     setQuestions(questions.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!title.trim()) {
@@ -62,9 +62,13 @@ export default function CreateQuizPage() {
       return
     }
 
-    const code = createQuiz(title, validQuestions)
-    setCreatedCode(code)
-    alert(`Quiz created successfully! Code: ${code}`)
+    try {
+      const code = await createQuiz(title, validQuestions)
+      setCreatedCode(code)
+      alert(`Quiz created successfully! Code: ${code}`)
+    } catch (error) {
+      alert('Failed to create quiz. Please try again.')
+    }
   }
 
   if (!user || user.role !== 'teacher') {
@@ -117,33 +121,63 @@ export default function CreateQuizPage() {
                 type="text"
                 value={q.question}
                 onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter question"
                 required
               />
 
-              <div className="space-y-2">
+              <div className="mb-3">
+                <p className="text-sm font-semibold text-gray-700 mb-2">
+                  Options (Click the radio button to mark correct answer):
+                </p>
+              </div>
+
+              <div className="space-y-3">
                 {q.choices.map((choice, cIndex) => (
-                  <div key={cIndex} className="flex items-center gap-2">
+                  <div 
+                    key={cIndex} 
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                      q.answer === cIndex 
+                        ? 'border-green-500 bg-green-50 shadow-md' 
+                        : 'border-gray-200 bg-white hover:border-blue-300'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name={`answer-${qIndex}`}
                       checked={q.answer === cIndex}
                       onChange={() => updateQuestion(qIndex, 'answer', cIndex)}
-                      className="w-4 h-4"
+                      className="w-5 h-5 text-green-600 focus:ring-green-500 cursor-pointer"
                     />
+                    <span className={`font-semibold min-w-[70px] ${
+                      q.answer === cIndex ? 'text-green-700' : 'text-gray-600'
+                    }`}>
+                      Option {String.fromCharCode(65 + cIndex)}:
+                    </span>
                     <input
                       type="text"
                       value={choice}
                       onChange={(e) => updateChoice(qIndex, cIndex, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                      placeholder={`Choice ${cIndex + 1}`}
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        q.answer === cIndex 
+                          ? 'border-green-400 focus:ring-green-500 bg-white font-medium' 
+                          : 'border-gray-300 focus:ring-primary'
+                      }`}
+                      placeholder={`Enter option ${String.fromCharCode(65 + cIndex)}`}
                       required
                     />
+                    {q.answer === cIndex && (
+                      <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                        ✓ CORRECT
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">Select the correct answer by clicking the radio button</p>
+              <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                <span className="text-lg">●</span> 
+                <span className="font-medium">Click the radio button next to the correct answer</span>
+              </p>
             </div>
           ))}
         </div>
