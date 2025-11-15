@@ -4,9 +4,6 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useQuiz, type Quiz, type Question } from '@/lib/QuizContext'
 
-// Disable static generation for this page
-export const dynamic = 'force-dynamic'
-
 function TakeQuizContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
