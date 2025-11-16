@@ -6,8 +6,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  // For production deployments we read the database connection from the
+  // DATABASE_URL environment variable. Locally you can still use SQLite
+  // by setting DATABASE_URL=file:./prisma/dev.db in a local .env.
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {

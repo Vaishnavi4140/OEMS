@@ -144,26 +144,22 @@ Empty file to prevent Jekyll processing (for GitHub Pages attempt)
 
 ## 🗄️ **Database Configuration**
 
-### **Current (Development):**
+### Current (Development) vs Production
+
+By default the project used a local SQLite file for quick development. For production (Vercel) you must use a hosted database — SQLite files will not persist on Vercel.
+
+Local (development) example .env entry:
 ```
 DATABASE_URL=file:./prisma/dev.db
 ```
-Uses SQLite - works locally
 
-### **Production (Recommended):**
+Production (recommended) example for PostgreSQL:
 
-Switch to PostgreSQL for production deployments:
-
-1. **Get PostgreSQL Database:**
-   - Vercel Postgres (free tier)
-   - Railway PostgreSQL (included)
-   - Supabase (free tier)
-   - Neon (free tier)
-
-2. **Update `.env`:**
 ```
 DATABASE_URL=postgresql://username:password@host:5432/database?schema=public
 ```
+
+Recommended providers: Vercel Postgres, Supabase, Neon, Railway, PlanetScale.
 
 3. **Run migrations:**
 ```bash
